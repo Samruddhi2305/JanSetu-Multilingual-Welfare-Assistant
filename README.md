@@ -232,3 +232,12 @@ Developed as part of the AI & Intelligent Systems track for welfare accessibilit
 ---
 
 ### "Empowering every citizen with access to the benefits they deserve."
+
+## 👨‍💻 Team Members
+
+- Name 1 Suchet Goel
+- Name 2 @Samruddhi2305
+- Name 3 (@github_username)
+- Name 4 (@github_username)
+
+**Team Name:** Welfare Wizards 🪄

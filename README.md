@@ -1,4 +1,4 @@
-# 🌉 JanSetu
+# JanSetu
 
 ### Multilingual Welfare Scheme Assistant for Rural India
 
@@ -6,7 +6,7 @@
 
 ---
 
-## 🎯 Problem Statement
+## Problem Statement
 
 India operates more than **950 central and state welfare schemes**, yet millions of eligible citizens remain unaware of the benefits available to them.
 
@@ -22,7 +22,7 @@ As a result, many deserving beneficiaries fail to access schemes such as PM-KISA
 
 ---
 
-## 💡 Our Solution
+## Our Solution
 
 **JanSetu** is a multilingual welfare assistance platform designed to help citizens:
 
@@ -109,7 +109,7 @@ Uses a structured welfare scheme database and rule-based retrieval before genera
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```text
 User
@@ -137,7 +137,7 @@ Document Checklist & Guidance
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Category        | Technology                 |
 | --------------- | -------------------------- |
@@ -152,7 +152,7 @@ Document Checklist & Guidance
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 JanSetu-Multilingual-Welfare-Assistant
@@ -175,7 +175,7 @@ JanSetu-Multilingual-Welfare-Assistant
 
 ---
 
-## 🚀 Running the Project
+## Running the Project
 
 ### 1. Clone Repository
 
@@ -203,7 +203,7 @@ http://localhost:8000
 
 ---
 
-## 📈 Expected Impact
+## Expected Impact
 
 If deployed in a district with approximately **10,000 target households**:
 
@@ -217,13 +217,13 @@ Even a modest increase in awareness can translate into significant financial ben
 
 ---
 
-## 🎥 Demo
+## Demo
 
 A live demonstration and deployment notebook are included as part of the project submission.
 
 ---
 
-## 👨‍💻 Team
+## Team
 
 **Team Welfare Wizards**
 

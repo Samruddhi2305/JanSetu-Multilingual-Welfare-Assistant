@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welfare Chatbot Simulator - NSS Project</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient-start: #0b0f19;
+            --bg-gradient-end: #1a1b35;
+            --card-bg: rgba(26, 29, 50, 0.65);
+            --card-border: rgba(99, 102, 241, 0.15);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary-accent: #6366f1; /* Indigo */
+            --secondary-accent: #0d9488; /* Teal */
+            --warning-accent: #d97706; /* Gold */
+            --bubble-user: #0d9488;
+            --bubble-bot: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Layout */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            gap: 20px;
+            padding: 24px;
+            height: calc(100vh - 80px);
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(11, 15, 25, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .badge {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Panels Styles (Glassmorphism) */
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .panel-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .panel-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Left Sidebar: Personas & Fallbacks */
+        .persona-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .persona-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .persona-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .persona-card.active {
+            border-color: var(--primary-accent);
+            background: rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .persona-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .persona-lang {
+            font-size: 10px;
+            color: #38bdf8;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .persona-details {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Missed Call Trigger Card */
+        .fallback-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .missed-call-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
+            box-shadow: 0 4px 14px rgba(217, 119, 6, 0.25);
+        }
+
+        .missed-call-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
+        }
+
+        .missed-call-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-family: inherit;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        /* Central Panel: Chat Container */
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(26, 29, 50, 0.3);
+        }
+
+        .chat-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .chat-status {
+            font-size: 12px;
+            color: #38bdf8;
+            font-weight: 500;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: rgba(10, 11, 23, 0.4);
+        }
+
+        .message {
+            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.bot .message-bubble {
+            background: var(--bubble-bot);
+            color: #e2e8f0;
+            border-bottom-left-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .message.user .message-bubble {
+            background: var(--bubble-user);
+            color: white;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+        }
+
+        .message-time {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            align-self: flex-end;
+        }
+
+        /* Chat input area */
+        .chat-input-area {
+            padding: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(26, 29, 50, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 14px;
+            color: white;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-accent);
+        }
+
+        .send-btn {
+            background: var(--primary-accent);
+            border: none;
+            color: white;
+            padding: 0 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #4f46e5;
+            transform: scale(1.02);
+        }
+
+        /* Quick Reply Buttons */
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .quick-reply-btn {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            color: #a5b4fc;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .quick-reply-btn:hover {
+            background: rgba(99, 102, 241, 0.25);
+            border-color: rgba(99, 102, 241, 0.6);
+            color: #c7d2fe;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Age Selector */
+        .age-selector {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .age-selector label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .age-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        .age-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+            transition: transform 0.15s;
+        }
+
+        .age-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        .age-value-display {
+            font-size: 22px;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: #818cf8;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .age-submit-btn {
+            background: var(--primary-accent);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .age-submit-btn:hover {
+            background: #4f46e5;
+            transform: scale(1.02);
+        }
+
+        /* Income Numpad */
+        .income-input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .income-display-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .income-display {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #38bdf8;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            text-align: right;
+            min-height: 46px;
+        }
+
+        .income-display .currency-symbol {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            margin-right: 4px;
+        }
+
+        .income-submit-btn {
+            background: var(--secondary-accent);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .income-submit-btn:hover {
+            background: #0f766e;
+            transform: scale(1.02);
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .numpad-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            padding: 12px 0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .numpad-btn:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .numpad-btn:active {
+            transform: scale(0.95);
+        }
+
+        .numpad-btn.backspace {
+            color: #f87171;
+            font-size: 18px;
+        }
+
+        .numpad-btn.clear {
+            color: #fbbf24;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .income-hint {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Right Panel: Monitor & Variables */
+        .monitor-section {
+            margin-bottom: 20px;
+        }
+
+        .variable-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .variable-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .variable-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .variable-value {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        /* Network Throttle Toggle */
+        .throttle-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: auto;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--secondary-accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .latency-status {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .metrics-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 12px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        /* Typing indicator styling */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+            background: var(--bubble-bot);
+            border-radius: 14px;
+            width: 50px;
+            justify-content: center;
+            align-self: flex-start;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <h1>WELFARE CHATBOT PROTOTYPE</h1>
+            <p>Track 1: AI & Intelligent Solutions  |  NSS Project Simulator</p>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: center;">
+            <label class="toggle-switch" title="Enable Bot Voice (TTS)">
+                <span style="font-size:12px; font-weight:600; margin-right:8px;">🔊 Voice Output</span>
+                <div class="switch">
+                    <input type="checkbox" id="voiceToggle">
+                    <span class="slider"></span>
+                </div>
+            </label>
+            <span class="badge">Model: Local NLU / Gemini API</span>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar - Personas -->
+        <div class="panel">
+            <div class="panel-header">
+                <h3>👥 Test Personas</h3>
+            </div>
+            <div class="persona-list">
+                <div class="persona-card" onclick="loadPersona('farmer')">
+                    <div class="persona-name">Ram Singh (Farmer)</div>
+                    <div class="persona-lang">Hindi / Hinglish flow</div>
+                    <div class="persona-details">Age: 38, Income: 4,000/mo. Cultivates land in rural UP. Screens for PM-KISAN & PM-KMY.</div>
+                </div>
+
+                <div class="persona-card" onclick="loadPersona('gig')">
+                    <div class="persona-name">M. Karthik (Gig Worker)</div>
+                    <div class="persona-lang">Tamil / Tanglish flow</div>
+                    <div class="persona-details">Age: 24, Income: 12,000/mo. Delivery driver in Chennai. Screens for PM-SYM.</div>
+                </div>
+
+                <div class="persona-card" onclick="loadPersona('woman')">
+                    <div class="persona-name">Sunita Devi (Home Head)</div>
+                    <div class="persona-lang">Code-mixed Hindi flow</div>
+                    <div class="persona-details">Age: 42, Income: 3,000/mo. Homemaker, rural household. Screens for PM Ujjwala.</div>
+                </div>
+            </div>
+
+            <!-- Offline Trigger Box -->
+            <div class="fallback-section">
+                <div class="panel-header" style="border:none; margin:0; padding:0; margin-bottom:8px;">
+                    <h3>☎️ Zero-Data Offline Trigger</h3>
+                </div>
+                <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; line-height:1.4;">
+                    Simulate a missed-call trigger to activate the offline state machine over SMS, bypassing data balance entirely.
+                </p>
+                <input type="text" id="phoneInput" class="missed-call-input" placeholder="Enter Phone Number (e.g. 9876543210)">
+                <button class="missed-call-btn" onclick="triggerMissedCall()">
+                    📞 Ring Missed Call (Free)
+                </button>
+            </div>
+        </div>
+
+        <!-- Central Chat Panel -->
+        <div class="panel chat-panel">
+            <div class="chat-header">
+                <div class="chat-info">
+                    <div class="avatar">🤖</div>
+                    <div>
+                        <h4 style="font-size: 14px;">Welfare Sahayak</h4>
+                        <div class="chat-status" id="chatChannel">Channel: Web Client</div>
+                    </div>
+                </div>
+                <div class="chat-status" id="latencyIndicator">Latency: -- ms</div>
+            </div>
+
+            <div class="chat-messages" id="chatBox">
+                <!-- Greetings will be inserted here -->
+            </div>
+
+            <div class="chat-input-area" id="inputArea">
+                <!-- Dynamic input controls will be rendered here by JS -->
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Variables & Monitor -->
+        <div class="panel">
+            <div class="panel-header">
+                <h3>🔍 Dialogue State variables</h3>
+            </div>
+            <div class="monitor-section">
+                <div class="variable-grid">
+                    <div class="variable-row">
+                        <span class="variable-label">Active Step</span>
+                        <span class="variable-value" id="varStep">start</span>
+                    </div>
+                    <div class="variable-row">
+                        <span class="variable-label">Language (lang)</span>
+                        <span class="variable-value" id="varLang">--</span>
+                    </div>
+                    <div class="variable-row">
+                        <span class="variable-label">Age</span>
+                        <span class="variable-value" id="varAge">--</span>
+                    </div>
+                    <div class="variable-row">
+                        <span class="variable-label">Annual Income</span>
+                        <span class="variable-value" id="varIncome">--</span>
+                    </div>
+                    <div class="variable-row">
+                        <span class="variable-label">Occupation</span>
+                        <span class="variable-value" id="varOccupation">--</span>
+                    </div>
+                    <div class="variable-row">
+                        <span class="variable-label">Gender</span>
+                        <span class="variable-value" id="varGender">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metrics-card">
+                <h4 style="font-size: 13px; font-weight:700; margin-bottom:8px; color:var(--text-primary);">📊 Latency Profiler</h4>
+                <div class="metric-row">
+                    <span>Processing Latency:</span>
+                    <span id="metricProc">-- ms</span>
+                </div>
+                <div class="metric-row">
+                    <span>Simulated Link Delay:</span>
+                    <span id="metricLink">-- ms</span>
+                </div>
+                <div class="metric-row">
+                    <span>Total Roundtrip Time:</span>
+                    <span id="metricTotal" style="font-weight:700; color:#10b981;">-- ms</span>
+                </div>
+            </div>
+
+            <!-- Network Throttle Toggle -->
+            <div class="throttle-card">
+                <label class="toggle-switch">
+                    <span style="font-size:12px; font-weight:600;">Simulate 2G/3G Network</span>
+                    <div class="switch">
+                        <input type="checkbox" id="throttleToggle" onchange="toggleThrottle()">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+                <div class="latency-status" id="throttleStatus">Latency mode: Dynamic / Local host</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = "web_user_" + Math.random().toString(36).substring(7);
+        let throttleActive = false;
+        let isSmsMode = false;
+        let incomeValue = "";  // For numpad input tracking
+
+        // Track the current dialogue step on the frontend so we render the right input control.
+        // Steps: 'greeting' -> 'lang' -> 'age' -> 'income' -> 'occupation' -> 'gender' -> 'completed'
+        let currentUIStep = 'greeting';
+
+        // Persona auto-play state
+        let personaPlaying = false;
+        let personaQueue = [];
+        
+        // Voice STT setup
+        let recognition;
+        let isRecording = false;
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            // Language will be dynamically set based on active session lang, default to en-IN
+            recognition.lang = 'en-IN';
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const inputField = document.getElementById("userInput");
+                if (inputField) {
+                    inputField.value = transcript;
+                }
+                document.getElementById("micBtn").innerText = "🎤";
+                isRecording = false;
+            };
+            
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error", event.error);
+                document.getElementById("micBtn").innerText = "🎤";
+                isRecording = false;
+            };
+            
+            recognition.onend = function() {
+                const micBtn = document.getElementById("micBtn");
+                if (micBtn) micBtn.innerText = "🎤";
+                isRecording = false;
+            };
+        }
+
+        // Reset state on page load
+        window.onload = function() {
+            resetSession();
+        };
+
+        function resetSession() {
+            personaPlaying = false;
+            personaQueue = [];
+            incomeValue = "";
+            currentUIStep = 'greeting';
+
+            fetch("/api/reset", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ session_id: sessionId })
+            }).then(() => {
+                document.getElementById("chatBox").innerHTML = "";
+                appendMessage("bot", "Hello! Welcome to Welfare Sahayak. Tap a greeting below to start.\nनमस्ते! कल्याण सहायक में आपका स्वागत है।");
+                updateVariables({ step: "start", lang: "--" });
+                renderInputControls();
+            });
+        }
+
+        // ============ Dynamic Input Rendering ============
+
+        function renderInputControls() {
+            const area = document.getElementById("inputArea");
+
+            // If persona is auto-playing, show a disabled status bar
+            if (personaPlaying) {
+                area.innerHTML = `
+                    <div style="text-align:center; padding:8px; color:var(--text-secondary); font-size:12px; font-style:italic;">
+                        ⏳ Persona simulation running...
+                    </div>`;
+                return;
+            }
+
+            switch (currentUIStep) {
+                case 'greeting':
+                    area.innerHTML = `
+                        <div class="quick-replies">
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Hello')">👋 Hello</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Namaste')">🙏 Namaste / नमस्ते</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Vanakkam')">🙏 Vanakkam / வணக்கம்</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Hi')">Hi</button>
+                        </div>`;
+                    break;
+
+                case 'lang':
+                    area.innerHTML = `
+                        <div class="quick-replies">
+                            <button class="quick-reply-btn" onclick="sendQuickReply('1')">1️⃣ English</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('2')">2️⃣ Hindi / हिंदी</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('3')">3️⃣ Tamil / தமிழ்</button>
+                        </div>`;
+                    break;
+
+                case 'age':
+                    area.innerHTML = `
+                        <div class="age-selector">
+                            <label>Age:</label>
+                            <input type="range" id="ageSlider" class="age-slider" min="10" max="100" value="30" oninput="document.getElementById('ageDisplay').innerText = this.value">
+                            <span id="ageDisplay" class="age-value-display">30</span>
+                            <button class="age-submit-btn" onclick="submitAge()">Confirm ✓</button>
+                        </div>`;
+                    break;
+
+                case 'income':
+                    area.innerHTML = `
+                        <div class="income-input-area">
+                            <div class="income-display-row">
+                                <div class="income-display" id="incomeDisplay"><span class="currency-symbol">₹</span>0</div>
+                                <button class="income-submit-btn" onclick="submitIncome()">Send ✓</button>
+                            </div>
+                            <div class="numpad">
+                                <button class="numpad-btn" onclick="numpadPress('1')">1</button>
+                                <button class="numpad-btn" onclick="numpadPress('2')">2</button>
+                                <button class="numpad-btn" onclick="numpadPress('3')">3</button>
+                                <button class="numpad-btn backspace" onclick="numpadBackspace()">⌫</button>
+                                <button class="numpad-btn" onclick="numpadPress('4')">4</button>
+                                <button class="numpad-btn" onclick="numpadPress('5')">5</button>
+                                <button class="numpad-btn" onclick="numpadPress('6')">6</button>
+                                <button class="numpad-btn clear" onclick="numpadClear()">CLR</button>
+                                <button class="numpad-btn" onclick="numpadPress('7')">7</button>
+                                <button class="numpad-btn" onclick="numpadPress('8')">8</button>
+                                <button class="numpad-btn" onclick="numpadPress('9')">9</button>
+                                <button class="numpad-btn" onclick="numpadPress('000')">000</button>
+                                <button class="numpad-btn" onclick="numpadPress('0')">0</button>
+                                <button class="numpad-btn" onclick="numpadPress('00')">00</button>
+                                <button class="numpad-btn" style="grid-column: span 2; font-size:12px; color:#38bdf8;" onclick="numpadPreset(5000)">5k/mo</button>
+                            </div>
+                            <div class="income-hint">Enter monthly income in ₹ (Rupees per month)</div>
+                        </div>`;
+                    incomeValue = "";
+                    break;
+
+                case 'occupation':
+                    area.innerHTML = `
+                        <div class="quick-replies">
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Farmer')">🌾 Farmer / किसान</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Laborer')">🏗️ Laborer / मजदूर</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Gig Worker')">🛵 Gig Worker / Driver</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Student')">📚 Student</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Homemaker')">🏠 Homemaker / गृहणी</button>
+                        </div>`;
+                    break;
+
+                case 'gender':
+                    area.innerHTML = `
+                        <div class="quick-replies">
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Male')">👨 Male / पुरुष</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('Female')">👩 Female / महिला</button>
+                        </div>`;
+                    break;
+                    
+                case 'ask_process':
+                    area.innerHTML = `
+                        <div class="quick-replies">
+                            <button class="quick-reply-btn" style="border-color: #22c55e; color: #22c55e;" onclick="sendQuickReply('Yes')">✅ Yes / हाँ</button>
+                            <button class="quick-reply-btn" style="border-color: #ef4444; color: #ef4444;" onclick="sendQuickReply('No')">❌ No / नहीं</button>
+                        </div>`;
+                    break;
+
+                case 'post_flow_qna':
+                case 'completed':
+                default:
+                    // Free text input after all structured questions
+                    area.innerHTML = `
+                        <div class="chat-input-row">
+                            <button id="micBtn" class="send-btn" style="padding: 0 16px; background: #6366f1;" onclick="toggleDictation()" title="Speak your question">🎤</button>
+                            <input type="text" id="userInput" class="chat-input" placeholder="Ask about applying or documents..." onkeydown="handleKey(event)">
+                            <button class="send-btn" onclick="sendFreeText()">Send</button>
+                        </div>
+                        <div style="margin-top: 8px; text-align: center;">
+                            <button class="quick-reply-btn" style="font-size: 11px; padding: 6px 12px; border-color: #f59e0b; color: #f59e0b;" onclick="sendQuickReply('restart')">🔄 Screen Another Person</button>
+                        </div>`;
+                    break;
+            }
+        }
+
+        // ============ Voice Handlers ============
+        function toggleDictation() {
+            if (!recognition) {
+                alert("Speech recognition is not supported in this browser.");
+                return;
+            }
+            
+            const micBtn = document.getElementById("micBtn");
+            if (isRecording) {
+                recognition.stop();
+                return;
+            }
+            
+            // Set language based on session
+            const currentLang = document.getElementById("varLang").innerText;
+            if (currentLang === 'hi') recognition.lang = 'hi-IN';
+            else if (currentLang === 'ta') recognition.lang = 'ta-IN';
+            else recognition.lang = 'en-IN';
+            
+            try {
+                recognition.start();
+                isRecording = true;
+                micBtn.innerText = "🔴"; // Recording indicator
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        function speakBotMessage(text) {
+            const voiceEnabled = document.getElementById("voiceToggle").checked;
+            if (!voiceEnabled || !('speechSynthesis' in window)) return;
+            
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const currentLang = document.getElementById("varLang").innerText;
+            
+            if (currentLang === 'hi') utterance.lang = 'hi-IN';
+            else if (currentLang === 'ta') utterance.lang = 'ta-IN';
+            else utterance.lang = 'en-IN';
+            
+            // Attempt to pick a natural sounding voice if available
+            const voices = window.speechSynthesis.getVoices();
+            const targetVoice = voices.find(v => v.lang.includes(utterance.lang) || v.lang.includes(utterance.lang.replace('-IN', '')));
+            if (targetVoice) utterance.voice = targetVoice;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // ============ Input Handlers ============
+
+        function sendQuickReply(text) {
+            sendMessageText(text);
+        }
+
+        function submitAge() {
+            const age = document.getElementById('ageDisplay').innerText;
+            sendMessageText(age);
+        }
+
+        // Numpad functions
+        function numpadPress(digit) {
+            if (incomeValue.length >= 10) return; // Prevent absurdly long numbers
+            incomeValue += digit;
+            updateIncomeDisplay();
+        }
+
+        function numpadBackspace() {
+            incomeValue = incomeValue.slice(0, -1);
+            updateIncomeDisplay();
+        }
+
+        function numpadClear() {
+            incomeValue = "";
+            updateIncomeDisplay();
+        }
+
+        function numpadPreset(val) {
+            incomeValue = val.toString();
+            updateIncomeDisplay();
+        }
+
+        function updateIncomeDisplay() {
+            const display = document.getElementById('incomeDisplay');
+            const numericVal = parseInt(incomeValue) || 0;
+            display.innerHTML = `<span class="currency-symbol">₹</span>${numericVal.toLocaleString('en-IN')}`;
+        }
+
+        function submitIncome() {
+            if (!incomeValue || parseInt(incomeValue) === 0) return;
+            sendMessageText(incomeValue);
+            incomeValue = "";
+        }
+
+        function handleKey(e) {
+            if (e.key === "Enter") {
+                sendFreeText();
+            }
+        }
+
+        function sendFreeText() {
+            const input = document.getElementById("userInput");
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = "";
+            sendMessageText(text);
+        }
+
+        // ============ Core Send Logic ============
+
+        function sendMessageText(text) {
+            appendMessage("user", text);
+            showTypingIndicator();
+
+            const delay = throttleActive ? 2500 : 0;
+            const startTime = Date.now();
+
+            setTimeout(() => {
+                fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: text, session_id: sessionId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    removeTypingIndicator();
+                    appendMessage("bot", data.response);
+                    
+                    // Trigger TTS
+                    speakBotMessage(data.response);
+
+                    const totalTime = Date.now() - startTime;
+
+                    // Update variables display
+                    updateVariables(data.session);
+
+                    // Update Latency Profile displays
+                    document.getElementById("latencyIndicator").innerText = `Latency: ${totalTime} ms`;
+                    document.getElementById("metricProc").innerText = `${data.latency_ms} ms`;
+                    document.getElementById("metricLink").innerText = `${delay} ms`;
+                    document.getElementById("metricTotal").innerText = `${totalTime} ms`;
+
+                    // Advance the UI step based on server's reported step
+                    advanceUIStep(data.session.step);
+
+                    // If persona auto-play, continue
+                    if (personaPlaying) {
+                        playNextPersonaStep();
+                    }
+                })
+                .catch(err => {
+                    removeTypingIndicator();
+                    appendMessage("bot", "Error connecting to server. Please ensure the FastAPI server is running.");
+                    personaPlaying = false;
+                    renderInputControls();
+                });
+            }, delay);
+        }
+
+        // Map backend step to the next UI input to show
+        function advanceUIStep(serverStep) {
+            switch (serverStep) {
+                case 'start':
+                    currentUIStep = 'greeting';
+                    break;
+                case 'lang':
+                    currentUIStep = 'lang';
+                    break;
+                case 'age':
+                    currentUIStep = 'age';
+                    break;
+                case 'income':
+                    currentUIStep = 'income';
+                    break;
+                case 'occupation':
+                    currentUIStep = 'occupation';
+                    break;
+                case 'gender':
+                    currentUIStep = 'gender';
+                    break;
+                case 'ask_process':
+                    currentUIStep = 'ask_process';
+                    break;
+                case 'post_flow_qna':
+                    currentUIStep = 'post_flow_qna';
+                    break;
+                case 'completed':
+                    currentUIStep = 'completed';
+                    break;
+                default:
+                    currentUIStep = 'completed';
+            }
+            renderInputControls();
+        }
+
+        // ============ Personas ============
+
+        function loadPersona(persona) {
+            // Reset first
+            personaPlaying = false;
+            personaQueue = [];
+
+            sessionId = "web_user_" + Math.random().toString(36).substring(7);
+            currentUIStep = 'greeting';
+
+            fetch("/api/reset", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ session_id: sessionId })
+            }).then(() => {
+                document.getElementById("chatBox").innerHTML = "";
+                appendMessage("bot", "Hello! Welcome to Welfare Sahayak. Tap a greeting below to start.\nनमस्ते! कल्याण सहायक में आपका स्वागत है।");
+                updateVariables({ step: "start", lang: "--" });
+
+                // The correct order matching the backend flow:
+                // 1. Greeting (triggers start -> sets step to 'age', bot shows lang prompt)
+                // 2. Language selection (at step 'age' but actually bot asked for lang in greeting)
+                //    Actually, backend: step='start' receives greeting -> returns lang prompt -> sets step='age'
+                //    Then step='age' receives lang input... NO.
+                //    Let me re-read: step 'start' returns greeting, sets step to 'age'.
+                //    Then step 'age' expects age number, returns ask_income, sets step to 'income'.
+                //    The language selection happens via detection in greeting, not as a separate step.
+                //    
+                //    So the actual backend flow is:
+                //    1. greeting text -> triggers 'start', greeting includes "select language 1/2/3", step becomes 'age'
+                //       But in start handler: it checks msg for 1/2/3/english/hindi/tamil and sets lang.
+                //       Then returns greeting. So greeting + language is ONE step.
+                //       HOWEVER the persona previously sent greeting and language as TWO separate messages.
+                //       That means the greeting goes to 'start', sets step='age', returns greeting.
+                //       Then "2" goes to step='age', which tries to extract a number. "2" -> age=2.
+                //       That's the BUG! The language "2" was being parsed as age=2.
+                //
+                // The fix: persona should send greeting WITH language preference in ONE message.
+                // e.g. "Namaste 2" or we just send the greeting which auto-detects language.
+
+                const personas = {
+                    farmer: [
+                        "Namaste",         // Greeting - auto-detects Hindi, step goes to 'lang'
+                        "2",               // Language selection (Hindi), step goes to 'age'
+                        "38",              // Age - step goes to 'income'
+                        "4000",            // Monthly income - step goes to 'occupation'
+                        "Farmer",          // Occupation - step goes to 'gender'
+                        "Male"             // Gender - step goes to 'completed'
+                    ],
+                    gig: [
+                        "Vanakkam",        // Greeting - auto-detects Tamil, step goes to 'lang'
+                        "3",               // Language selection (Tamil), step goes to 'age'
+                        "24",              // Age
+                        "12000",           // Monthly income
+                        "Gig driver",      // Occupation
+                        "Male"             // Gender
+                    ],
+                    woman: [
+                        "Namaste",         // Greeting - auto-detects Hindi, step goes to 'lang'
+                        "2",               // Language selection (Hindi), step goes to 'age'
+                        "42",              // Age
+                        "3000",            // Monthly income
+                        "Homemaker",       // Occupation
+                        "Female"           // Gender
+                    ]
+                };
+
+                personaQueue = personas[persona].slice();
+                personaPlaying = true;
+
+                // Set visual active persona
+                const cards = document.querySelectorAll(".persona-card");
+                cards.forEach(c => c.classList.remove("active"));
+                if (persona === 'farmer') cards[0].classList.add("active");
+                if (persona === 'gig') cards[1].classList.add("active");
+                if (persona === 'woman') cards[2].classList.add("active");
+
+                renderInputControls();
+
+                // Start playing after a short delay
+                setTimeout(playNextPersonaStep, 600);
+            });
+        }
+
+        function playNextPersonaStep() {
+            if (personaQueue.length === 0) {
+                personaPlaying = false;
+                renderInputControls();
+                return;
+            }
+
+            const nextMsg = personaQueue.shift();
+
+            setTimeout(() => {
+                sendMessageText(nextMsg);
+            }, throttleActive ? 3000 : 800);
+        }
+
+        // ============ Missed Call ============
+
+        function triggerMissedCall() {
+            const phoneInput = document.getElementById("phoneInput");
+            const phone = phoneInput.value.trim();
+            if (!phone) {
+                alert("Please enter a phone number to simulate the missed call.");
+                return;
+            }
+
+            sessionId = phone;
+            isSmsMode = true;
+            currentUIStep = 'lang';
+            document.getElementById("chatChannel").innerText = "Channel: SMS (Zero-Data)";
+            document.getElementById("chatChannel").style.color = "#d97706";
+
+            document.getElementById("chatBox").innerHTML = "";
+            appendMessage("user", `[📞 Missed Call Ring from ${phone}]`);
+            showTypingIndicator();
+
+            const delay = throttleActive ? 2500 : 0;
+            const startTime = Date.now();
+
+            setTimeout(() => {
+                fetch("/api/missed-call", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone_number: phone })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    removeTypingIndicator();
+                    appendMessage("bot", `[SMS Inbound]\n${data.response}`);
+
+                    const totalTime = Date.now() - startTime;
+
+                    updateVariables({ step: data.session.step, lang: data.session.lang });
+
+                    document.getElementById("latencyIndicator").innerText = `Latency: ${totalTime} ms`;
+                    document.getElementById("metricProc").innerText = `${data.latency_ms} ms`;
+                    document.getElementById("metricLink").innerText = `${delay} ms`;
+                    document.getElementById("metricTotal").innerText = `${totalTime} ms`;
+
+                    advanceUIStep(data.session.step);
+                })
+                .catch(err => {
+                    removeTypingIndicator();
+                    appendMessage("bot", "Error simulating missed call. Check server connectivity.");
+                });
+            }, delay);
+        }
+
+        // ============ Utilities ============
+
+        function toggleThrottle() {
+            throttleActive = document.getElementById("throttleToggle").checked;
+            document.getElementById("throttleStatus").innerText = throttleActive 
+                ? "Throttling active: +2500ms 2G network simulation delay" 
+                : "Latency mode: Dynamic / Local host";
+        }
+
+        function appendMessage(sender, text) {
+            const chatBox = document.getElementById("chatBox");
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("message", sender);
+            
+            const bubbleDiv = document.createElement("div");
+            bubbleDiv.classList.add("message-bubble");
+            bubbleDiv.innerText = text;
+            
+            const timeDiv = document.createElement("div");
+            timeDiv.classList.add("message-time");
+            const now = new Date();
+            timeDiv.innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            
+            msgDiv.appendChild(bubbleDiv);
+            msgDiv.appendChild(timeDiv);
+            chatBox.appendChild(msgDiv);
+            
+            // Auto scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatBox = document.getElementById("chatBox");
+            const indicator = document.createElement("div");
+            indicator.id = "typingIndicator";
+            indicator.classList.add("typing-indicator");
+            
+            for(let i=0; i<3; i++) {
+                const dot = document.createElement("div");
+                dot.classList.add("typing-dot");
+                indicator.appendChild(dot);
+            }
+            chatBox.appendChild(indicator);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById("typingIndicator");
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function updateVariables(vars) {
+            document.getElementById("varStep").innerText = vars.step || "completed";
+            document.getElementById("varLang").innerText = vars.lang || "--";
+            document.getElementById("varAge").innerText = vars.age || "--";
+            document.getElementById("varIncome").innerText = vars.income ? `INR ${vars.income}/yr` : "--";
+            document.getElementById("varOccupation").innerText = vars.occupation || "--";
+            document.getElementById("varGender").innerText = vars.gender || "--";
+        }
+    </script>
+</body>
+</html>
